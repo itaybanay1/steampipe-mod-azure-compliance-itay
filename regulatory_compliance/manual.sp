@@ -5,6 +5,7 @@ query "manual_control" {
       'info' as status,
       'Manual verification required.' as reason,
       sub.display_name as subscription,
+      sub.*
     from
       azure_subscription sub
   EOQ
