@@ -1,7 +1,7 @@
 query "manual_control" {
   sql = <<-EOQ
     select
-      sub.*,
+      sub.subscription_id,
       'asdasd' as resource,
       'info' as status,
       'Manual verification required.' as reason
