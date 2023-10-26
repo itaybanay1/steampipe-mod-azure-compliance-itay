@@ -1,12 +1,13 @@
 query "manual_control" {
   sql = <<-EOQ
     select
-      id as resource,
+      sub.id as resource,
       'info' as status,
       'Manual verification required.' as reason,
-      display_name as subscription
+      sub.display_name as subscription,
+      sub.*
     from
-      azure_subscription;
+      azure_subscription as sub;
   EOQ
 }
 
