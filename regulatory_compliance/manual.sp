@@ -2,6 +2,7 @@ query "manual_control" {
   sql = <<-EOQ
     select
       sub.*,
+      'asdasd' as resource,
       'info' as status,
       'Manual verification required.' as reason
       
