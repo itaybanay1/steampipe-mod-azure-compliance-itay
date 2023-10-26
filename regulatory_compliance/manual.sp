@@ -3,7 +3,9 @@ query "manual_control" {
     select
       sub.id as resource,
       'info' as status,
-      'Manual verification required.' as reason
+      'Manual verification required.' as reason,
+      sub.*,
+      comp.*
       
     from
       azure_compute_virtual_machine comp
