@@ -1,13 +1,15 @@
 query "manual_control" {
   sql = <<-EOQ
     select
-      sub.subscription_id,
-      'asdasd' as resource,
+      sub.id as resource,
       'info' as status,
       'Manual verification required.' as reason
       
     from
-      azure_compute_virtual_machine sub
+      azure_compute_virtual_machine comp
+    join 
+      azure_subscription sub
+    on comp.subscription_id = sub.subscription_id
   EOQ
 }
 
