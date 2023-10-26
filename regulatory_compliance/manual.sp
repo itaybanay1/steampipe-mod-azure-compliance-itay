@@ -5,13 +5,8 @@ query "manual_control" {
       'info' as status,
       'Manual verification required.' as reason,
       sub.display_name as subscription,
-      app.*
     from
-      azure_app_service_web_app app
-    join
       azure_subscription sub
-    on 
-      sub.subscription_id = app.subscription_id;
   EOQ
 }
 
