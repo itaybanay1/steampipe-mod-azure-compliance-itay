@@ -28,7 +28,7 @@ benchmark "cis_v200_9" {
 }
 
 control "cis_v200_9_1" {
-  title         = "9.1 Ensure App Service Authentication is set up for apps in Azure App Service"
+  title         = "9.1 Ensure App Service Authentication is set up for apps in Azure App Service2"
   description   = "Azure App Service Authentication is a feature that can prevent anonymous HTTP requests from reaching a Web Application or authenticate those with tokens before they reach the app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented."
   query         = query.appservice_authentication_enabled
   documentation = file("./cis_v200/docs/cis_v200_9_1.md")

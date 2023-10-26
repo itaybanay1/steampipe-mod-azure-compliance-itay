@@ -384,7 +384,7 @@ control "appservice_web_app_incoming_client_cert_on" {
 }
 
 control "appservice_authentication_enabled" {
-  title       = "Ensure App Service authentication is set up for apps in Azure App Service"
+  title       = "Ensure App Service authentication is set up for apps in Azure App Service2"
   description = "Azure App Service authentication is a feature that can prevent anonymous HTTP requests from reaching a Web Application or authenticate those with tokens before they reach the app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented."
   query       = query.appservice_authentication_enabled
 
