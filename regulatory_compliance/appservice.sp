@@ -1546,9 +1546,7 @@ query "appservice_authentication_enabled" {
       case
         when not (auth_settings -> 'properties' ->> 'enabled') :: boolean then name || ' authentication not set.'
         else name || ' authentication set.'
-      end as reason,
-      app.*,
-      sub.*
+      end as reason
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "app.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
