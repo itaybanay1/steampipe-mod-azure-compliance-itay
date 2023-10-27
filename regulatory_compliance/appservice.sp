@@ -416,8 +416,8 @@ query "appservice_web_app_use_https" {
         else 'ok'
       end as status,
       case
-        when not https_only then name || ' does not redirect all HTTP traffic to HTTPS.'
-        else name || ' redirects all HTTP traffic to HTTPS.'
+        when not https_only then app.name || ' does not redirect all HTTP traffic to HTTPS.'
+        else app.name || ' redirects all HTTP traffic to HTTPS.'
       end as reason,
       comp.id,
       comp.type,
