@@ -4,9 +4,18 @@ query "manual_control" {
       sub.id as resource,
       'info' as status,
       'Manual verification required.' as reason,
-      sub.*,
-      comp.*
-      
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
     from
       azure_compute_virtual_machine comp
     join 
