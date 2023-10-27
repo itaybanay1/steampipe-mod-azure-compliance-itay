@@ -1546,15 +1546,33 @@ query "appservice_authentication_enabled" {
       case
         when not (auth_settings -> 'properties' ->> 'enabled') :: boolean then name || ' authentication not set.'
         else name || ' authentication set.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
+
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "app.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
-      azure_app_service_web_app as app,
+      azure_app_service_web_app as app
+    join
       azure_subscription as sub
-    where
-      sub.subscription_id = app.subscription_id;
+    on
+      sub.subscription_id = app.subscription_id
+    join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id; 
   EOQ
 }
 

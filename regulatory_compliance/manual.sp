@@ -20,7 +20,8 @@ query "manual_control" {
       azure_compute_virtual_machine comp
     join 
       azure_subscription sub
-    on comp.subscription_id = sub.subscription_id
+    on 
+      comp.subscription_id = sub.subscription_id; 
   EOQ
 }
 
