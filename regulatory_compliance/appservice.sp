@@ -1538,7 +1538,7 @@ query "appservice_web_app_latest_python_version" {
 query "appservice_authentication_enabled" {
   sql = <<-EOQ
     select
-      app.id as resource,
+      sub.id as resource,
       case
         when not (auth_settings -> 'properties' ->> 'enabled') :: boolean then 'alarm'
         else 'ok'
@@ -1551,10 +1551,7 @@ query "appservice_authentication_enabled" {
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "app.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
-      azure_app_service_web_app as app,
       azure_subscription as sub
-    where
-      sub.subscription_id = app.subscription_id;
   EOQ
 }
 
