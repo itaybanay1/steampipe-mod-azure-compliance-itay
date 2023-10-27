@@ -1544,7 +1544,7 @@ query "appservice_authentication_enabled" {
         else 'ok'
       end as status,
       case
-        when not (auth_settings -> 'properties' ->> 'enabled') :: boolean then name || ' authentication not set.'
+        when not (auth_settings -> 'properties' ->> 'enabled') :: boolean then app.name || ' authentication not set.'
         else app.name || ' authentication set.'
       end as reason,
       comp.id,
