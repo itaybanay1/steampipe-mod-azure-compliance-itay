@@ -484,8 +484,8 @@ query "keyvault_rbac_enabled" {
         else 'alarm'
       end as status,
       case
-        when enable_rbac_authorization then name || ' has RBAC enabled.'
-        else name || ' have RBAC disabled.'
+        when enable_rbac_authorization then app.name || ' has RBAC enabled.'
+        else app.name || ' have RBAC disabled.'
       end as reason,
       comp.id,
       comp.type,
@@ -570,10 +570,10 @@ query "keyvault_vault_recoverable" {
         else 'alarm'
       end as status,
       case
-        when not soft_delete_enabled and not purge_protection_enabled then name || ' "soft delete" and "do not purge" not enabled.'
-        when not soft_delete_enabled then name || ' "soft delete" not enabled.'
-        when not purge_protection_enabled then name || ' "do not purge" not enabled.'
-        else name || ' "soft delete" and "do not purge" enabled.'
+        when not soft_delete_enabled and not purge_protection_enabled then app.name || ' "soft delete" and "do not purge" not enabled.'
+        when not soft_delete_enabled then app.name || ' "soft delete" not enabled.'
+        when not purge_protection_enabled then app.name || ' "do not purge" not enabled.'
+        else app.name || ' "soft delete" and "do not purge" enabled.'
       end as reason,
       comp.id,
       comp.type,
