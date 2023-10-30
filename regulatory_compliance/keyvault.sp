@@ -354,13 +354,28 @@ query "keyvault_vault_private_link_used" {
         when private_endpoint_connections @> '[{"PrivateLinkServiceConnectionStateStatus": "Approved"}]'
         then a.name || ' using private link.'
         else a.name || ' private link not enabled.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "a.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_key_vault a,
-      azure_subscription sub;
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
+    where 
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -471,15 +486,29 @@ query "keyvault_rbac_enabled" {
       case
         when enable_rbac_authorization then name || ' has RBAC enabled.'
         else name || ' have RBAC disabled.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "kv.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_key_vault as kv,
-      azure_subscription as sub
+      azure_subscription as sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = kv.subscription_id;
+      sub.subscription_id = kv.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -505,16 +534,30 @@ query "keyvault_with_non_rbac_key_expiration_set" {
         when enabled and expires_at is null then ' expiration date not set.'
         when not enabled then ' disabled.'
         else ' expiration date set to ' || to_char(expires_at, 'DD-Mon-YYYY') || '.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "kvk.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_key_vault_key kvk
       left join non_rbac_vault as v on v.name = kvk.vault_name,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = kvk.subscription_id;
+      sub.subscription_id = kvk.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -531,15 +574,29 @@ query "keyvault_vault_recoverable" {
         when not soft_delete_enabled then name || ' "soft delete" not enabled.'
         when not purge_protection_enabled then name || ' "do not purge" not enabled.'
         else name || ' "soft delete" and "do not purge" enabled.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "kv.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_key_vault kv,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = kv.subscription_id;
+      sub.subscription_id = kv.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -565,16 +622,30 @@ query "keyvault_with_non_rbac_secret_expiration_set" {
         when enabled and expires_at is null then ' expiration date not set.'
         when not enabled then ' disabled.'
         else ' expiration date set to ' || to_char(expires_at, 'DD-Mon-YYYY') || '.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "kvs.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_key_vault_secret kvs
       left join non_rbac_vault as v on v.name = kvs.vault_name,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = kvs.subscription_id;
+      sub.subscription_id = kvs.subscription_id and 
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -600,16 +671,30 @@ query "keyvault_with_rbac_key_expiration_set" {
         when enabled and expires_at is null then ' expiration date not set.'
         when not enabled then ' disabled.'
         else ' expiration date set to ' || to_char(expires_at, 'DD-Mon-YYYY') || '.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "kvk.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_key_vault_key kvk
       left join rbac_vault as v on v.name = kvk.vault_name,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = kvk.subscription_id;
+      sub.subscription_id = kvk.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
