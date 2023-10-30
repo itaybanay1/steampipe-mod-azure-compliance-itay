@@ -570,10 +570,10 @@ query "keyvault_vault_recoverable" {
         else 'alarm'
       end as status,
       case
-        when not soft_delete_enabled and not purge_protection_enabled then app.name || ' "soft delete" and "do not purge" not enabled.'
-        when not soft_delete_enabled then app.name || ' "soft delete" not enabled.'
-        when not purge_protection_enabled then app.name || ' "do not purge" not enabled.'
-        else app.name || ' "soft delete" and "do not purge" enabled.'
+        when not soft_delete_enabled and not purge_protection_enabled then kv.name || ' "soft delete" and "do not purge" not enabled.'
+        when not soft_delete_enabled then kv.name || ' "soft delete" not enabled.'
+        when not purge_protection_enabled then kv.name || ' "do not purge" not enabled.'
+        else kv.name || ' "soft delete" and "do not purge" enabled.'
       end as reason,
       comp.id,
       comp.type,
