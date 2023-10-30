@@ -484,8 +484,8 @@ query "keyvault_rbac_enabled" {
         else 'alarm'
       end as status,
       case
-        when enable_rbac_authorization then app.name || ' has RBAC enabled.'
-        else app.name || ' have RBAC disabled.'
+        when enable_rbac_authorization then kv.name || ' has RBAC enabled.'
+        else kv.name || ' have RBAC disabled.'
       end as reason,
       comp.id,
       comp.type,
