@@ -569,7 +569,7 @@ query "appservice_web_app_latest_tls_version" {
       end as status,
       case
         when configuration -> 'properties' ->> 'minTlsVersion' < '1.2' then app.name || ' not using the latest version of TLS encryption.'
-        else name || ' using the latest version of TLS encryption.'
+        else app.name || ' using the latest version of TLS encryption.'
       end as reason,
       comp.id,
       comp.type,
@@ -1654,8 +1654,8 @@ query "appservice_ftp_deployment_disabled" {
           else 'ok'
         end as status,
         case
-          when configuration -> 'properties' ->> 'ftpsState' = 'AllAllowed' then app.name || ' FTP deployments enabled.'
-          else app.name || ' FTP deployments disabled.'
+          when configuration -> 'properties' ->> 'ftpsState' = 'AllAllowed' then fa.name || ' FTP deployments enabled.'
+          else fa.name || ' FTP deployments disabled.'
         end as reason,
         comp.id,
         comp.type,
@@ -1691,8 +1691,8 @@ query "appservice_ftp_deployment_disabled" {
           else 'ok'
         end as status,
         case
-          when configuration -> 'properties' ->> 'ftpsState' = 'AllAllowed' then name || ' FTP deployments enabled.'
-          else name || ' FTP deployments disabled.'
+          when configuration -> 'properties' ->> 'ftpsState' = 'AllAllowed' then wa.name || ' FTP deployments enabled.'
+          else wa.name || ' FTP deployments disabled.'
         end as reason,
         comp.id,
         comp.type,
@@ -1732,7 +1732,7 @@ query "appservice_web_app_register_with_active_directory_enabled" {
         else 'ok'
       end as status,
       case
-        when app.identity = '{}' then app.name || ' register with azure active directory disabled.'
+        when sub.identity = '{}' then app.name || ' register with azure active directory disabled.'
         else app.name || ' register with azure active directory enabled.'
       end as reason,
        comp.id,
