@@ -459,15 +459,32 @@ query "appservice_web_app_incoming_client_cert_on" {
       case
         when not client_cert_enabled then name || ' incoming client certificates set to off.'
         else name || ' incoming client certificates set to on.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "app.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
-      azure_app_service_web_app as app,
+      azure_app_service_web_app as app
+    join
       azure_subscription as sub
-    where
-      sub.subscription_id = app.subscription_id;
+    on
+      sub.subscription_id = app.subscription_id
+    join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id; 
   EOQ
 }
 
@@ -553,15 +570,32 @@ query "appservice_web_app_latest_tls_version" {
       case
         when configuration -> 'properties' ->> 'minTlsVersion' < '1.2' then name || ' not using the latest version of TLS encryption.'
         else name || ' using the latest version of TLS encryption.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "app.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
-      azure_app_service_web_app as app,
+      azure_app_service_web_app as app
+    join
       azure_subscription as sub
-    where
-      sub.subscription_id = app.subscription_id;
+    on
+      sub.subscription_id = app.subscription_id
+    join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id; 
   EOQ
 }
 
@@ -1255,15 +1289,32 @@ query "appservice_web_app_latest_http_version" {
       case
         when not (configuration -> 'properties' ->> 'http20Enabled') :: boolean then name || ' HTTP version not latest.'
         else name || ' HTTP version is latest.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "app.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
-      azure_app_service_web_app as app,
+      azure_app_service_web_app as app
+    join
       azure_subscription as sub
-    where
-      sub.subscription_id = app.subscription_id;
+    on
+      sub.subscription_id = app.subscription_id
+    join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id; 
   EOQ
 }
 
@@ -1605,15 +1656,33 @@ query "appservice_ftp_deployment_disabled" {
         case
           when configuration -> 'properties' ->> 'ftpsState' = 'AllAllowed' then name || ' FTP deployments enabled.'
           else name || ' FTP deployments disabled.'
-        end as reason
+        end as reason,
+        comp.id,
+        comp.type,
+        comp.vm_id,
+        comp.size,
+        comp.allow_extension_operations,
+        comp.computer_name,
+        comp.disable_password_authentication,
+        comp.image_exact_version,
+        comp.image_id,
+        comp.os_version,
+        comp.os_name,
+        comp.os_type
+
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "fa.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
       from
-        azure_app_service_function_app fa,
+        azure_app_service_function_app fa
+      join
         azure_subscription sub
-      where
+      on
         sub.subscription_id = fa.subscription_id
+      join
+        azure_compute_virtual_machine comp
+      on
+        comp.subscription_id = sub.subscription_id
     union
       select
         wa.id as resource,
@@ -1624,15 +1693,33 @@ query "appservice_ftp_deployment_disabled" {
         case
           when configuration -> 'properties' ->> 'ftpsState' = 'AllAllowed' then name || ' FTP deployments enabled.'
           else name || ' FTP deployments disabled.'
-        end as reason
+        end as reason,
+        comp.id,
+        comp.type,
+        comp.vm_id,
+        comp.size,
+        comp.allow_extension_operations,
+        comp.computer_name,
+        comp.disable_password_authentication,
+        comp.image_exact_version,
+        comp.image_id,
+        comp.os_version,
+        comp.os_name,
+        comp.os_type
+
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "wa.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
       from
-        azure_app_service_web_app as wa,
+        azure_app_service_web_app as wa
+      join
         azure_subscription as sub
-      where
-        sub.subscription_id = wa.subscription_id;
+      on
+        sub.subscription_id = wa.subscription_id
+      join
+        azure_compute_virtual_machine comp
+      on
+        comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -1647,15 +1734,33 @@ query "appservice_web_app_register_with_active_directory_enabled" {
       case
         when identity = '{}' then name || ' register with azure active directory disabled.'
         else name || ' register with azure active directory enabled.'
-      end as reason
+      end as reason,
+       comp.id,
+        comp.type,
+        comp.vm_id,
+        comp.size,
+        comp.allow_extension_operations,
+        comp.computer_name,
+        comp.disable_password_authentication,
+        comp.image_exact_version,
+        comp.image_id,
+        comp.os_version,
+        comp.os_name,
+        comp.os_type
+
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "app.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
-      azure_app_service_web_app as app,
+      azure_app_service_web_app as app
+    join
       azure_subscription as sub
-    where
-      sub.subscription_id = app.subscription_id;
+    on
+      sub.subscription_id = app.subscription_id
+    join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id; 
   EOQ
 }
 
