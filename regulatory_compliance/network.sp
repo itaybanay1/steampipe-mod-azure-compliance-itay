@@ -543,12 +543,27 @@ query "network_bastion_host_min_1" {
       case
         when i.subscription_id is null then sub.display_name || ' does not have bastion host.'
         else sub.display_name || ' has ' || no_bastion_host || ' bastion host(s).'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "i.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_subscription as sub
-      left join bastion_hosts as i on i.subscription_id = sub.subscription_id;
+      left join bastion_hosts as i on i.subscription_id = sub.subscription_id,
+      azure_compute_virtual_machine comp
+    where
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 

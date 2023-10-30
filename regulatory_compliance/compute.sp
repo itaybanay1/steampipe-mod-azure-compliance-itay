@@ -785,16 +785,30 @@ query "compute_os_and_data_disk_encrypted_with_cmk" {
       case
         when encryption_type = 'EncryptionAtRestWithCustomerKey' then disk.name || ' encrypted with CMK.'
         else disk.name || ' not encrypted with CMK.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "disk.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_compute_disk disk,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
       disk_state = 'Attached'
-      and sub.subscription_id = disk.subscription_id;
+      and sub.subscription_id = disk.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -872,16 +886,30 @@ query "compute_unattached_disk_encrypted_with_cmk" {
       case
         when encryption_type = 'EncryptionAtRestWithCustomerKey' then disk.name || ' encrypted with CMK.'
         else disk.name || ' not encrypted with CMK.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "disk.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_compute_disk disk,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
       disk_state != 'Attached'
-      and sub.subscription_id = disk.subscription_id;
+      and sub.subscription_id = disk.subscription_id
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -2412,15 +2440,29 @@ query "compute_vm_utilizing_managed_disk" {
       case
         when managed_disk_id is null then vm.name || ' VM not utilizing managed disks.'
         else vm.name || ' VM utilizing managed disks.'
-      end as reason
+      end as reason,      
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "vm.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_compute_virtual_machine as vm,
-      azure_subscription as sub
+      azure_subscription as sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = vm.subscription_id;
+      sub.subscription_id = vm.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
