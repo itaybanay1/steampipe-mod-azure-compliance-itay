@@ -907,9 +907,9 @@ query "compute_unattached_disk_encrypted_with_cmk" {
       azure_subscription sub,
       azure_compute_virtual_machine comp
     where
-      disk_state != 'Attached'
-      and sub.subscription_id = disk.subscription_id
-      comp.subscription_id = sub.subscription_id;
+      disk_state != 'Attached' and
+      and sub.subscription_id = disk.subscription_id and
+      comp.subscription_id = sub.subscription_id and;
   EOQ
 }
 
@@ -2434,11 +2434,11 @@ query "compute_vm_utilizing_managed_disk" {
     select
       vm.id as resource,
       case
-        when managed_disk_id is null then 'alarm'
+        when vm.managed_disk_id is null then 'alarm'
         else 'ok'
       end as status,
       case
-        when managed_disk_id is null then vm.name || ' VM not utilizing managed disks.'
+        when vm.managed_disk_id is null then vm.name || ' VM not utilizing managed disks.'
         else vm.name || ' VM utilizing managed disks.'
       end as reason,      
       comp.id,
