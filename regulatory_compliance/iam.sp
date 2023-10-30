@@ -270,12 +270,28 @@ query "iam_no_custom_subscription_owner_roles_created" {
         when count(*) = 1 then 'There is one custom owner role.'
         when count(*) > 1 then 'There are ' || count(*) || ' custom owner roles.'
         else 'There are no custom owner roles.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "cr.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       owner_custom_roles cr,
       azure_subscription sub
+    join
+      azure_compute_virtual_machine comp
+    on 
+      comp.subscription_id = sub.subscription_id
     where
       sub.subscription_id = cr.subscription_id
     group by
@@ -493,11 +509,27 @@ query "iam_conditional_access_mfa_enabled" {
         when p.built_in_controls @> '["mfa"]' then p.display_name || ' MFA enabled.'
         else p.display_name || ' MFA disabled.'
       end as reason,
-      t.tenant_id
+      t.tenant_id,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "t.")}
     from
       azure_tenant as t,
-      azuread_conditional_access_policy as p;
+      azuread_conditional_access_policy as p
+    join 
+      azure_compute_virtual_machine comp
+    on 
+      comp.subscription_id = t.subscription_id; 
   EOQ
 }
 
@@ -513,11 +545,27 @@ query "iam_user_not_allowed_to_create_security_group" {
         when a.default_user_role_permissions ->> 'allowedToCreateSecurityGroups' = 'false' then a.display_name || ' does not allow user to create security groups.'
         else a.display_name || ' allows user to create security groups.'
       end as reason,
-      t.tenant_id
+      t.tenant_id,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "t.")}
     from
       azure_tenant as t,
-      azuread_authorization_policy as a;
+      azuread_authorization_policy as a
+    join 
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = t.subscription_id; 
   EOQ
 }
 
@@ -533,10 +581,26 @@ query "iam_user_not_allowed_to_register_application" {
         when a.default_user_role_permissions ->> 'allowedToCreateApps' = 'false' then a.display_name || ' does not allow user to register applications.'
         else a.display_name || ' allows user to register applications.'
       end as reason,
-      t.tenant_id
+      t.tenant_id,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "t.")}
     from
       azure_tenant as t,
-      azuread_authorization_policy as a;
+      azuread_authorization_policy as a
+    join 
+      azure_compute_virtual_machine comp
+    on 
+      comp.subscription_id = t.subscription_id; ;
   EOQ
 }
