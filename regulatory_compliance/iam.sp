@@ -297,7 +297,8 @@ query "iam_no_custom_subscription_owner_roles_created" {
     group by
       cr.subscription_id,
       cr._ctx,
-      sub.display_name;
+      sub.display_name,
+      comp.id;
   EOQ
 }
 
@@ -525,10 +526,9 @@ query "iam_conditional_access_mfa_enabled" {
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "t.")}
     from
       azure_tenant as t,
-      azuread_conditional_access_policy as p
-    join 
-      azure_compute_virtual_machine comp
-    on 
+      azuread_conditional_access_policy as p,
+      azure_compute_virtual_machine as comp
+    where 
       comp.subscription_id = t.subscription_id; 
   EOQ
 }
@@ -561,10 +561,9 @@ query "iam_user_not_allowed_to_create_security_group" {
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "t.")}
     from
       azure_tenant as t,
-      azuread_authorization_policy as a
-    join 
-      azure_compute_virtual_machine comp
-    on
+      azuread_authorization_policy as a,
+      azure_compute_virtual_machine as comp
+    where
       comp.subscription_id = t.subscription_id; 
   EOQ
 }
@@ -597,10 +596,9 @@ query "iam_user_not_allowed_to_register_application" {
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "t.")}
     from
       azure_tenant as t,
-      azuread_authorization_policy as a
-    join 
-      azure_compute_virtual_machine comp
-    on 
+      azuread_authorization_policy as a,
+      azure_compute_virtual_machine as comp
+    where 
       comp.subscription_id = t.subscription_id; ;
   EOQ
 }

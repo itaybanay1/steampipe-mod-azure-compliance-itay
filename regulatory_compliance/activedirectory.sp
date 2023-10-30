@@ -48,7 +48,7 @@ query "ad_guest_user_reviewed_monthly" {
     join
       azure_compute_virtual_machine comp
     on
-      comp.subscription_id = t.subscription_id; 
+      comp.subscription_id = t.subscription_id 
     where
       u.user_type = 'Guest';
   EOQ
