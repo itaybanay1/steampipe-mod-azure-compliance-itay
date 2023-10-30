@@ -908,7 +908,7 @@ query "compute_unattached_disk_encrypted_with_cmk" {
       azure_compute_virtual_machine comp
     where
       disk_state != 'Attached' and
-      and sub.subscription_id = disk.subscription_id and
+      sub.subscription_id = disk.subscription_id and
       comp.subscription_id = sub.subscription_id;
   EOQ
 }
