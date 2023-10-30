@@ -298,7 +298,18 @@ query "iam_no_custom_subscription_owner_roles_created" {
       cr.subscription_id,
       cr._ctx,
       sub.display_name,
-      comp.id;
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type;
   EOQ
 }
 
