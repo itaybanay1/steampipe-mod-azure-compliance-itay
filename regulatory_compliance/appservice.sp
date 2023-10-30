@@ -1728,11 +1728,11 @@ query "appservice_web_app_register_with_active_directory_enabled" {
     select
       app.id as resource,
       case
-        when sub.identity = '{}' then 'alarm'
+        when app.identity = '{}' then 'alarm'
         else 'ok'
       end as status,
       case
-        when sub.identity = '{}' then app.name || ' register with azure active directory disabled.'
+        when app.identity = '{}' then app.name || ' register with azure active directory disabled.'
         else app.name || ' register with azure active directory enabled.'
       end as reason,
        comp.id,
