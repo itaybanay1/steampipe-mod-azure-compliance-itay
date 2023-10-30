@@ -1728,7 +1728,7 @@ query "appservice_web_app_register_with_active_directory_enabled" {
     select
       app.id as resource,
       case
-        when identity = '{}' then 'alarm'
+        when sub.identity = '{}' then 'alarm'
         else 'ok'
       end as status,
       case
