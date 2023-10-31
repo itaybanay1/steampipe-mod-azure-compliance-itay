@@ -571,7 +571,7 @@ query "securitycenter_azure_defender_on_for_appservice" {
     on
       comp.subscription_id = sub.subscription_id
     where
-      name = 'AppServices';
+      sub_pricing.name = 'AppServices';
   EOQ
 }
 
