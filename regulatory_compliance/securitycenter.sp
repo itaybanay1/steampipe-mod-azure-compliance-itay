@@ -412,7 +412,7 @@ query "securitycenter_azure_defender_on_for_sqlservervm" {
     on
       comp.subscription_id = sub.subscription_id
     where
-      name = 'SqlServerVirtualMachines';
+      sub_pricing.name = 'SqlServerVirtualMachines';
   EOQ
 }
 
@@ -569,7 +569,7 @@ query "securitycenter_azure_defender_on_for_appservice" {
     join
       azure_compute_virtual_machine comp
     on
-      comp.subscription_id = sub.subscription_id;
+      comp.subscription_id = sub.subscription_id
     where
       name = 'AppServices';
   EOQ
@@ -609,7 +609,7 @@ query "securitycenter_azure_defender_on_for_containerregistry" {
     on
       comp.subscription_id = sub.subscription_id
     where
-      name = 'ContainerRegistry';
+      sub_pricing.name = 'ContainerRegistry';
   EOQ
 }
 
@@ -647,7 +647,7 @@ query "securitycenter_azure_defender_on_for_cosmosdb" {
     on
       comp.subscription_id = sub.subscription_id
     where
-      name = 'CosmosDbs';
+      sub_pricing.name = 'CosmosDbs';
   EOQ
 }
 
@@ -745,7 +745,7 @@ query "securitycenter_azure_defender_on_for_dns" {
     on
       comp.subscription_id = sub.subscription_id
     where
-      name = 'Dns';
+      sub_pricing.name = 'Dns';
   EOQ
 }
 
@@ -805,7 +805,7 @@ query "securitycenter_azure_defender_on_for_keyvault" {
     on
       comp.subscription_id = sub.subscription_id
     where
-      name = 'KeyVaults';
+      sub_pricing.name = 'KeyVaults';
   EOQ
 }
 
@@ -843,7 +843,7 @@ query "securitycenter_azure_defender_on_for_opensource_relational_db" {
     on
       comp.subscription_id = sub.subscription_id
     where
-      name = 'OpenSourceRelationalDatabases';
+      sub_pricing.name = 'OpenSourceRelationalDatabases';
   EOQ
 }
 
@@ -906,7 +906,7 @@ query "securitycenter_azure_defender_on_for_server" {
     on
       comp.subscription_id = sub.subscription_id
     where
-      name = 'VirtualMachines';
+      sub_pricing.name = 'VirtualMachines';
   EOQ
 }
 
@@ -944,7 +944,7 @@ query "securitycenter_azure_defender_on_for_sqldb" {
     on
       comp.subscription_id = sub.subscription_id
     where
-      name = 'SqlServers';
+      sub_pricing.name = 'SqlServers';
   EOQ
 }
 
@@ -982,7 +982,7 @@ query "securitycenter_azure_defender_on_for_storage" {
     on
       comp.subscription_id = sub.subscription_id
     where
-      name = 'StorageAccounts';
+      sub_pricing.name = 'StorageAccounts';
   EOQ
 }
 
@@ -1018,9 +1018,9 @@ query "securitycenter_mcas_integration" {
     join
       azure_compute_virtual_machine comp
     on
-      comp.subscription_id = sub.subscription_id; 
+      comp.subscription_id = sub.subscription_id
     where
-      name = 'MCAS';
+      sc_sett.name = 'MCAS';
   EOQ
 }
 
@@ -1035,14 +1035,30 @@ query "securitycenter_wdatp_integration" {
       case
         when enabled then 'Microsoft Cloud App Security (MCAS) integrated with Security Center.'
         else 'Microsoft Cloud App Security (MCAS) not integrated with Security Center.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sc_sett.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_security_center_setting sc_sett
       right join azure_subscription sub on sc_sett.subscription_id = sub.subscription_id
+    join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id
     where
-      name = 'WDATP';
+      sc_sett.name = 'WDATP';
   EOQ
 }
 
