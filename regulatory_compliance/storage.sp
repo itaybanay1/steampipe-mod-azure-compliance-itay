@@ -331,12 +331,10 @@ query "storage_account_uses_private_link" {
       azure_storage_account as a
       left join storage_account_connection as s on a.id = s.id,
       azure_subscription as sub,
-      join
-        azure_compute_virtual_machine comp
-      on
-        comp.subscription_id = sub.subscription_id
+      azure_compute_virtual_machine as comp
     where
-      sub.subscription_id = a.subscription_id;
+      sub.subscription_id = a.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -349,8 +347,8 @@ query "storage_account_infrastructure_encryption_enabled" {
         else 'alarm'
       end as status,
       case
-        when require_infrastructure_encryption then name || ' infrastructure encryption enabled.'
-        else name || ' infrastructure encryption disabled.'
+        when require_infrastructure_encryption then s.name || ' infrastructure encryption enabled.'
+        else s.name || ' infrastructure encryption disabled.'
       end as reason,
       comp.id,
       comp.type,
