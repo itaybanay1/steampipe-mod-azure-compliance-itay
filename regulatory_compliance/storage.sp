@@ -187,15 +187,32 @@ query "storage_account_secure_transfer_required_enabled" {
       case
         when not enable_https_traffic_only then sa.name || ' encryption in transit not enabled.'
         else sa.name || ' encryption in transit enabled.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "sa.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
-      azure_storage_account sa,
+      azure_storage_account sa
+    join
       azure_subscription sub
-    where
-      sub.subscription_id = sa.subscription_id;
+    on
+      sub.subscription_id = sa.subscription_id
+    join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -208,17 +225,31 @@ query "storage_account_default_network_access_rule_denied" {
         else 'ok'
       end as status,
       case
-        when sa.network_rule_default_action = 'Allow' then name || ' allows traffic from all networks.'
-        else name || ' allows traffic from specific networks.'
-      end as reason
+        when sa.network_rule_default_action = 'Allow' then sa.name || ' allows traffic from all networks.'
+        else sa.name || ' allows traffic from specific networks.'
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "sa.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_storage_account sa,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = sa.subscription_id;
+      sub.subscription_id = sa.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -280,14 +311,30 @@ query "storage_account_uses_private_link" {
       case
         when s.id is null then a.name || ' not uses private link.'
         else a.name || ' uses private link.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "a.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_storage_account as a
       left join storage_account_connection as s on a.id = s.id,
-      azure_subscription as sub
+      azure_subscription as sub,
+      join
+        azure_compute_virtual_machine comp
+      on
+        comp.subscription_id = sub.subscription_id
     where
       sub.subscription_id = a.subscription_id;
   EOQ
@@ -304,15 +351,30 @@ query "storage_account_infrastructure_encryption_enabled" {
       case
         when require_infrastructure_encryption then name || ' infrastructure encryption enabled.'
         else name || ' infrastructure encryption disabled.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_storage_account as s,
-      azure_subscription as sub
+      azure_subscription as sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = s.subscription_id;
+      sub.subscription_id = s.subscription_id and
+      comp.subscription_id = sub.subscription_id;
+
   EOQ
 }
 
@@ -402,15 +464,29 @@ query "storage_account_encryption_at_rest_using_cmk" {
       case
         when sa.encryption_key_source = 'Microsoft.Storage' then sa.name || ' not encrypted with CMK.'
         else sa.name || ' encrypted with CMK.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "sa.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_storage_account sa,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = sa.subscription_id;
+      sub.subscription_id = sa.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -484,14 +560,30 @@ query "storage_account_blob_containers_public_access_private" {
         when not account.allow_blob_public_access and container.public_access = 'None'
           then account.name || ' container ' || container.name || ' doesn''t allow anonymous access.'
         else account.name || ' container ' || container.name || ' allows anonymous access.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_global_qualifier_sql, "__QUALIFIER__", "container.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_storage_container container
       join azure_storage_account account on container.account_name = account.name
-      join azure_subscription sub on sub.subscription_id = account.subscription_id;
+      join azure_subscription sub on sub.subscription_id = account.subscription_id
+      join
+        azure_compute_virtual_machine comp
+      on
+        comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -508,22 +600,36 @@ query "storage_account_blob_service_logging_enabled" {
       case
         when not (sa.blob_service_logging ->> 'Read') :: boolean
         or not (sa.blob_service_logging ->> 'Write') :: boolean
-        or not (sa.blob_service_logging ->> 'Delete') :: boolean then name || ' blob service logging not enabled for ' ||
+        or not (sa.blob_service_logging ->> 'Delete') :: boolean then sa.name || ' blob service logging not enabled for ' ||
           concat_ws(', ',
             case when not (sa.blob_service_logging ->> 'Write') :: boolean then 'write' end,
             case when not (sa.blob_service_logging ->> 'Read') :: boolean then 'read' end,
             case when not (sa.blob_service_logging ->> 'Delete') :: boolean then 'delete' end
           ) || ' requests.'
-        else name || ' blob service logging enabled for read, write, delete requests.'
-      end as reason
+        else sa.name || ' blob service logging enabled for read, write, delete requests.'
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "sa.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_storage_account sa,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = sa.subscription_id;
+      sub.subscription_id = sa.subscription_id and 
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -544,15 +650,29 @@ query "storage_account_table_service_logging_enabled" {
             case when not table_logging_read then 'read' end,
             case when not table_logging_delete then 'delete' end
           ) || ' requests.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "sa.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_storage_account as sa,
-      azure_subscription as sub
+      azure_subscription as sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = sa.subscription_id;
+      sub.subscription_id = sa.subscription_id and 
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -569,15 +689,29 @@ query "storage_account_min_tls_1_2" {
         when minimum_tls_version = 'TLSEnforcementDisabled' then sa.name || ' TLS enforcement is disabled.'
         when minimum_tls_version = 'TLS1_2' then sa.name || ' minimum TLS version set to ' || minimum_tls_version || '.'
         else sa.name || ' minimum TLS version set to ' || minimum_tls_version || '.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "sa.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_storage_account sa,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = sa.subscription_id;
+      sub.subscription_id = sa.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -598,15 +732,29 @@ query "storage_account_queue_services_logging_enabled" {
             case when not queue_logging_read then 'read' end,
             case when not queue_logging_delete then 'delete' end
           ) || ' requests.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "sa.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_storage_account sa,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = sa.subscription_id;
+      sub.subscription_id = sa.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -621,15 +769,29 @@ query "storage_account_soft_delete_enabled" {
       case
         when not blob_soft_delete_enabled then sa.name || ' blobs soft delete disabled.'
         else sa.name || ' blobs soft delete enabled.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "sa.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_storage_account sa,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = sa.subscription_id;
+      sub.subscription_id = sa.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -644,14 +806,28 @@ query "storage_account_trusted_microsoft_services_enabled" {
       case
         when network_rule_bypass not like '%AzureServices%' then sa.name || ' trusted Microsoft services not enabled.'
         else sa.name || ' trusted Microsoft services enabled.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "sa.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_storage_account sa,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = sa.subscription_id;
+      sub.subscription_id = sa.subscription_id and 
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
