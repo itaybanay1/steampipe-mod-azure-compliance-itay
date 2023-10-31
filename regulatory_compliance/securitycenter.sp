@@ -226,12 +226,28 @@ query "securitycenter_automatic_provisioning_monitoring_agent_on" {
       case
         when auto_provision = 'On' then 'Automatic provisioning of monitoring agent is on.'
         else 'Automatic provisioning of monitoring agent is off.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sc_prov.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_security_center_auto_provisioning sc_prov
-      right join azure_subscription sub on sc_prov.subscription_id = sub.subscription_id;
+      right join azure_subscription sub on sc_prov.subscription_id = sub.subscription_id
+    join  
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id; 
   EOQ
 }
 
@@ -256,12 +272,28 @@ query "securitycenter_notify_alerts_configured" {
       case
         when notification_alert_count > 0 then '"Notify about alerts with the following severity" set to High.'
         else '"Notify about alerts with the following severity" not set to High.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_subscription sub
-      left join contact_info ci on sub.subscription_id = ci.subscription_id;
+      left join contact_info ci on sub.subscription_id = ci.subscription_id
+    join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id; 
   EOQ
 }
 
@@ -286,12 +318,29 @@ query "securitycenter_security_alerts_to_owner_enabled" {
       case
         when admin_alert_count > 0 then '"All users with the following roles" set to Owner'
         else '"All users with the following roles" not set to Owner.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_subscription sub
-      left join contact_info ci on sub.subscription_id = ci.subscription_id;
+      left join contact_info ci on sub.subscription_id = ci.subscription_id
+    join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id; 
+
   EOQ
 }
 
@@ -340,12 +389,28 @@ query "securitycenter_azure_defender_on_for_sqlservervm" {
       case
         when pricing_tier = 'Standard' then 'Azure Defender on for SQL servers on machines.'
         else 'Azure Defender off for SQL servers on machines.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub_pricing.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_security_center_subscription_pricing sub_pricing
       right join azure_subscription sub on sub_pricing.subscription_id = sub.subscription_id
+      join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id
     where
       name = 'SqlServerVirtualMachines';
   EOQ
@@ -376,12 +441,28 @@ query "securitycenter_additional_email_configured" {
         when non_default_count > 0 then 'Additional email addresses configured.'
         when default_count = 1 and default_email is not null then'Additional email addresses configured.'
         else 'Additional email addresses not configured.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_subscription sub
-      left join contact_info ci on sub.subscription_id = ci.subscription_id;
+      left join contact_info ci on sub.subscription_id = ci.subscription_id
+    join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id; 
   EOQ
 }
 
@@ -409,19 +490,47 @@ query "securitycenter_asc_default_setting_not_disabled" {
       case
         when count(value = 'Disabled') > 0 then 'Settings disabled for ' || count(*) filter (where value = 'Disabled') || ' parameters.'
         else 'Settings enabled for all the parameters.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       policy_assignment_parameters pol_assignment
       right join azure_subscription sub on pol_assignment.subscription_id = sub.subscription_id
+    join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id
     group by
       sub.id,
       pol_assignment.id,
       sub._ctx,
       sub.subscription_id,
       pol_assignment.subscription_id,
-      sub.display_name;
+      sub.display_name,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type;
   EOQ
 }
 
@@ -436,12 +545,31 @@ query "securitycenter_azure_defender_on_for_appservice" {
       case
         when pricing_tier = 'Standard' then 'Azure Defender on for App Services.'
         else 'Azure Defender off for App Services.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub_pricing.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_security_center_subscription_pricing sub_pricing
-      right join azure_subscription sub on sub_pricing.subscription_id = sub.subscription_id
+    right join 
+      azure_subscription sub  
+    on 
+      sub_pricing.subscription_id = sub.subscription_id
+    join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id;
     where
       name = 'AppServices';
   EOQ
@@ -458,12 +586,28 @@ query "securitycenter_azure_defender_on_for_containerregistry" {
       case
         when pricing_tier = 'Standard' then 'Azure Defender on for Container Registry.'
         else 'Azure Defender off for Container Registry.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub_pricing.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_security_center_subscription_pricing sub_pricing
       right join azure_subscription sub on sub_pricing.subscription_id = sub.subscription_id
+    join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id
     where
       name = 'ContainerRegistry';
   EOQ
@@ -480,12 +624,28 @@ query "securitycenter_azure_defender_on_for_cosmosdb" {
       case
         when pricing_tier = 'Standard' then 'Azure Defender on for Cosmos DB.'
         else 'Azure Defender off for Cosmos DB.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub_pricing.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_security_center_subscription_pricing sub_pricing
       right join azure_subscription sub on sub_pricing.subscription_id = sub.subscription_id
+    join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id
     where
       name = 'CosmosDbs';
   EOQ
@@ -523,12 +683,31 @@ query "securitycenter_azure_defender_on_for_database" {
           and data ->> 'SqlServers' = 'Standard'
           then 'Azure Defender on for Databases.'
         else 'Azure Defender off for Databases.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_subscription as sub
-      left join defender_list as l on l.subscription_id = sub.subscription_id;
+      left join 
+        defender_list as l 
+      on 
+        l.subscription_id = sub.subscription_id
+      join 
+        azure_compute_virtual_machine comp
+      on
+        comp.subscription_id = sub.subscription_id; 
   EOQ
 }
 
@@ -543,12 +722,28 @@ query "securitycenter_azure_defender_on_for_dns" {
       case
         when pricing_tier = 'Standard' then 'Azure Defender on for DNS.'
         else 'Azure Defender off for DNS.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub_pricing.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_security_center_subscription_pricing sub_pricing
       right join azure_subscription sub on sub_pricing.subscription_id = sub.subscription_id
+    join 
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id
     where
       name = 'Dns';
   EOQ
@@ -587,12 +782,28 @@ query "securitycenter_azure_defender_on_for_keyvault" {
       case
         when pricing_tier = 'Standard' then 'Azure Defender on for Key Vaults.'
         else 'Azure Defender off for Key Vaults.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub_pricing.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_security_center_subscription_pricing sub_pricing
       right join azure_subscription sub on sub_pricing.subscription_id = sub.subscription_id
+    join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id
     where
       name = 'KeyVaults';
   EOQ
@@ -609,12 +820,28 @@ query "securitycenter_azure_defender_on_for_opensource_relational_db" {
       case
         when pricing_tier = 'Standard' then 'Azure Defender on for Open Source Relational Databases.'
         else 'Azure Defender off for Open Source Relational Databases.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub_pricing.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_security_center_subscription_pricing sub_pricing
       right join azure_subscription sub on sub_pricing.subscription_id = sub.subscription_id
+    join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id
     where
       name = 'OpenSourceRelationalDatabases';
   EOQ
@@ -653,12 +880,31 @@ query "securitycenter_azure_defender_on_for_server" {
       case
         when pricing_tier = 'Standard' then 'Azure Defender on for Servers.'
         else 'Azure Defender off for Servers.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub_pricing.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_security_center_subscription_pricing sub_pricing
-      right join azure_subscription sub on sub_pricing.subscription_id = sub.subscription_id
+    right join 
+      azure_subscription sub 
+    on 
+      sub_pricing.subscription_id = sub.subscription_id
+    join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id
     where
       name = 'VirtualMachines';
   EOQ
@@ -675,12 +921,28 @@ query "securitycenter_azure_defender_on_for_sqldb" {
       case
         when pricing_tier = 'Standard' then 'Azure Defender on for SQL database servers.'
         else 'Azure Defender off for SQL database servers.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub_pricing.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_security_center_subscription_pricing sub_pricing
       right join azure_subscription sub on sub_pricing.subscription_id = sub.subscription_id
+    join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id
     where
       name = 'SqlServers';
   EOQ
@@ -697,12 +959,28 @@ query "securitycenter_azure_defender_on_for_storage" {
       case
         when pricing_tier = 'Standard' then 'Azure Defender on for Storage.'
         else 'Azure Defender off for Storage.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub_pricing.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_security_center_subscription_pricing sub_pricing
       right join azure_subscription sub on sub_pricing.subscription_id = sub.subscription_id
+      join
+        azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id
     where
       name = 'StorageAccounts';
   EOQ
@@ -719,12 +997,28 @@ query "securitycenter_mcas_integration" {
       case
         when enabled then 'Windows Defender ATP (WDATP) integrated with Security Center.'
         else 'Windows Defender ATP (WDATP) not integrated with Security Center.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sc_sett.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_security_center_setting sc_sett
       right join azure_subscription sub on sc_sett.subscription_id = sub.subscription_id
+    join
+      azure_compute_virtual_machine comp
+    on
+      comp.subscription_id = sub.subscription_id; 
     where
       name = 'MCAS';
   EOQ
