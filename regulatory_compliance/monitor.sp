@@ -604,8 +604,9 @@ query "monitor_log_alert_create_update_nsg" {
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
-      azure_subscription sub
-      left join alert_rule a on sub.subscription_id = a.subscription_id
+      azure_subscription sub,
+      left join alert_rule a 
+      on sub.subscription_id = a.subscription_id,
       join azure_compute_virtual_machine comp 
       on comp.subscription_id = sub.subscription_id
     group by
