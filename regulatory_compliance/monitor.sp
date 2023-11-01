@@ -400,7 +400,7 @@ query "monitor_diagnostic_settings_captures_proper_categories" {
       end as status,
       case
         when valid_category_count = 4
-          then name || ' logs enabled for required categories administrative, security, alert and policy.'
+          then sett.name || ' logs enabled for required categories administrative, security, alert and policy.'
         when valid_category_count > 0
           then sett.name || ' logs enabled for ' || valid_categories || ' categories.'
           else sett.name || ' logs not enabled for categories administrative, security, alert and policy.'
@@ -481,7 +481,19 @@ query "monitor_log_alert_create_policy_assignment" {
       a.subscription_id,
       sub.subscription_id,
       sub._ctx,
-      sub.display_name;
+      sub.display_name,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type;
   EOQ
 }
 
@@ -599,7 +611,19 @@ query "monitor_log_alert_create_update_nsg" {
     group by
       sub._ctx,
       sub.subscription_id,
-      sub.display_name;
+      sub.display_name
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type ;
   EOQ
 }
 
@@ -666,7 +690,19 @@ query "monitor_log_alert_create_update_public_ip_address" {
     group by
       sub._ctx,
       sub.subscription_id,
-      sub.display_name;
+      sub.display_name
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type ;
   EOQ
 }
 
@@ -799,7 +835,19 @@ query "monitor_log_alert_create_update_sql_servers_firewall_rule" {
     group by
       sub._ctx,
       sub.subscription_id,
-      sub.display_name;
+      sub.display_name
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type ;
   EOQ
 }
 
@@ -918,7 +966,19 @@ query "monitor_log_alert_delete_nsg" {
       group by
         sub._ctx,
         sub.subscription_id,
-        sub.display_name;
+        sub.display_name
+        comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type;
   EOQ
 }
 
@@ -974,7 +1034,19 @@ query "monitor_log_alert_delete_policy_assignment" {
     group by
       sub._ctx,
       sub.subscription_id,
-      sub.display_name;
+      sub.display_name,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type ;
   EOQ
 }
 
@@ -1040,7 +1112,18 @@ query "monitor_log_alert_delete_public_ip_address" {
     group by
       sub._ctx,
       sub.subscription_id,
-      sub.display_name;
+      sub.display_namecomp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type ;
   EOQ
 }
 
@@ -1106,7 +1189,19 @@ query "monitor_log_alert_delete_security_solution" {
     group by
       sub._ctx,
       sub.subscription_id,
-      sub.display_name;
+      sub.display_name
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type ;
   EOQ
 }
 
@@ -1171,7 +1266,19 @@ query "monitor_log_alert_delete_sql_servers_firewall_rule" {
     group by
       sub._ctx,
       sub.subscription_id,
-      sub.display_name;
+      sub.display_name
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type ;
   EOQ
 }
 
@@ -1342,7 +1449,7 @@ query "monitor_logs_storage_container_insights_activity_logs_not_public_accessib
       azure_subscription sub,
       azure_compute_virtual_machine comp
     where
-      name = 'insights-activity-logs'
+      sc.name = 'insights-activity-logs'
       and sub.subscription_id = sc.subscription_id and
       comp.subscription_id = sub.subscription_id;
   EOQ

@@ -436,11 +436,11 @@ query "postgres_db_server_log_disconnections_on" {
       azure_postgresql_server s,
       jsonb_array_elements(server_configurations) config,
       azure_subscription sub,
-      azure_compute_virtual_machine comp and
-      comp.subscription_id = sub.subscription_id
+      azure_compute_virtual_machine comp 
     where
       config ->> 'Name' = 'log_disconnections'
-      and sub.subscription_id = s.subscription_id;
+      and sub.subscription_id = s.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 

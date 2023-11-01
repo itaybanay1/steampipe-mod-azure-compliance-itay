@@ -745,7 +745,7 @@ query "sql_server_atp_enabled" {
     from
       azure_sql_server s,
       jsonb_array_elements(server_security_alert_policy) security,
-      azure_subscription sub
+      azure_subscription sub,
       azure_compute_virtual_machine comp
     where
       sub.subscription_id = s.subscription_id and 
