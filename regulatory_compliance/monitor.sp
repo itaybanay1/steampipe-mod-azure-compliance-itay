@@ -1125,7 +1125,7 @@ query "monitor_log_alert_delete_public_ip_address" {
     group by
       sub._ctx,
       sub.subscription_id,
-      sub.display_namecomp,
+      sub.display_name,
       comp.id,
       comp.type,
       comp.vm_id,
