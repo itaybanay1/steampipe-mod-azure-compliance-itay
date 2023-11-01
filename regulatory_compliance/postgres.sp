@@ -154,17 +154,19 @@ query "postgres_sql_ssl_enabled" {
         else 'ok'
       end as status,
       case
-        when ssl_enforcement = 'Disabled' then name || ' SSL connection disabled.'
-        else name || ' SSL connection enabled.'
+        when ssl_enforcement = 'Disabled' then s.name || ' SSL connection disabled.'
+        else s.name || ' SSL connection enabled.'
       end as reason
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_postgresql_server s,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = s.subscription_id;
+      sub.subscription_id = s.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -200,17 +202,31 @@ query "postgresql_server_infrastructure_encryption_enabled" {
         else 'alarm'
       end as status,
       case
-        when infrastructure_encryption = 'Enabled' then name || ' infrastructure encryption enabled.'
-        else name || ' infrastructure encryption disabled.'
-      end as reason
+        when infrastructure_encryption = 'Enabled' then s.name || ' infrastructure encryption enabled.'
+        else s.name || ' infrastructure encryption disabled.'
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_postgresql_server as s,
-      azure_subscription as sub
+      azure_subscription as sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = s.subscription_id;
+      sub.subscription_id = s.subscription_id and 
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -283,17 +299,31 @@ query "postgres_db_server_connection_throttling_on" {
       case
         when lower(config -> 'ConfigurationProperties' ->> 'value') != 'on' then s.name || ' server parameter connection_throttling off.'
         else s.name || ' server parameter connection_throttling on.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_postgresql_server s,
       jsonb_array_elements(server_configurations) config,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
       config ->> 'Name' = 'connection_throttling'
-      and sub.subscription_id = s.subscription_id;
+      and sub.subscription_id = s.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -308,17 +338,31 @@ query "postgres_db_server_log_checkpoints_on" {
       case
         when lower(config -> 'ConfigurationProperties' ->> 'value') != 'on' then s.name || ' server parameter log_checkpoints off.'
         else s.name || ' server parameter log_checkpoints on.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_postgresql_server s,
       jsonb_array_elements(server_configurations) config,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
       config ->> 'Name' = 'log_checkpoints'
-      and sub.subscription_id = s.subscription_id;
+      and sub.subscription_id = s.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -333,17 +377,31 @@ query "postgres_db_server_log_connections_on" {
       case
         when lower(config -> 'ConfigurationProperties' ->> 'value') != 'on' then s.name || ' server parameter log_connections off.'
         else s.name || ' server parameter log_connections on.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_postgresql_server s,
       jsonb_array_elements(server_configurations) config,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
       config ->> 'Name' = 'log_connections'
-      and sub.subscription_id = s.subscription_id;
+      and sub.subscription_id = s.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -356,16 +414,30 @@ query "postgres_db_server_log_disconnections_on" {
         else 'ok'
       end as status,
       case
-        when lower(config -> 'ConfigurationProperties' ->> 'value') != 'on' then name || ' server parameter log_disconnections off.'
-        else name || ' server parameter log_disconnections on.'
-      end as reason
+        when lower(config -> 'ConfigurationProperties' ->> 'value') != 'on' then s.name || ' server parameter log_disconnections off.'
+        else s.name || ' server parameter log_disconnections on.'
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_postgresql_server s,
       jsonb_array_elements(server_configurations) config,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp and
+      comp.subscription_id = sub.subscription_id
     where
       config ->> 'Name' = 'log_disconnections'
       and sub.subscription_id = s.subscription_id;
@@ -383,17 +455,31 @@ query "postgres_db_server_log_retention_days_3" {
       case
         when (config -> 'ConfigurationProperties' ->> 'value')::integer <= 3 then s.name || ' log files are retained for 3 days or lesser.'
         else s.name || ' log files are retained for more than 3 days.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_postgresql_server s,
       jsonb_array_elements(server_configurations) as config,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
       config ->> 'Name' = 'log_retention_days'
-      and sub.subscription_id = s.subscription_id;
+      and sub.subscription_id = s.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -418,16 +504,30 @@ query "postgres_db_server_allow_access_to_azure_services_disabled" {
       case
         when a.id is not null then s.title || ' does not restrict access to azure services.'
         else s.title || ' restricts access to azure services.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_postgresql_server as s
       left join postgres_db_with_allow_access_to_azure_services as a on a.id = s.id,
-      azure_subscription as sub
+      azure_subscription as sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = s.subscription_id;
+      sub.subscription_id = s.subscription_id
+      and comp.subscription_id = sub.subscription_id;
   EOQ
 }
 

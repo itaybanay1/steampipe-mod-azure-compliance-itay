@@ -143,16 +143,30 @@ query "cosmosdb_account_uses_private_link" {
       case
         when c.id is null then a.name || ' not uses private link.'
         else a.name || ' uses private link.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "a.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_cosmosdb_account as a
       left join cosmosdb_private_connection as c on c.id = a.id,
-      azure_subscription as sub
+      azure_subscription as sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = a.subscription_id;
+      sub.subscription_id = a.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -217,14 +231,28 @@ query "cosmosdb_account_virtual_network_filter_enabled" {
         when public_network_access = 'Disabled' then a.name || ' public network access disabled.'
         when public_network_access = 'Enabled' and is_virtual_network_filter_enabled = 'true' then a.name || ' virtual network filter enabled.'
         else a.name || ' virtual network filter disabled.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "a.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_cosmosdb_account as a,
-      azure_subscription as sub
+      azure_subscription as sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = a.subscription_id;
+      sub.subscription_id = a.subscription_id and 
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }

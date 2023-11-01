@@ -218,7 +218,19 @@ query "sql_server_and_databases_va_enabled" {
       case
         when security -> 'properties' ->> 'state' = 'Disabled' then s.name || ' VA setting disabled.'
         else s.name || ' VA setting enabled.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
@@ -226,9 +238,11 @@ query "sql_server_and_databases_va_enabled" {
       azure_sql_server s,
       jsonb_array_elements(server_security_alert_policy) security,
       jsonb_array_elements(server_vulnerability_assessment) assessment,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = s.subscription_id;
+      sub.subscription_id = s.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -264,18 +278,32 @@ query "sql_server_auditing_on" {
         else 'ok'
       end as status,
       case
-        when audit -> 'properties' ->> 'state' = 'Disabled' then name || ' auditing disabled.'
-        else name || ' auditing enabled.'
-      end as reason
+        when audit -> 'properties' ->> 'state' = 'Disabled' then s.name || ' auditing disabled.'
+        else s.name || ' auditing enabled.'
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_sql_server s,
       jsonb_array_elements(server_audit_policy) audit,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = s.subscription_id;
+      sub.subscription_id = s.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -322,16 +350,30 @@ query "sql_server_tde_protector_cmk_encrypted" {
       case
         when encryption ->> 'kind' = 'servicemanaged' then s.name || ' TDE protector not encrypted with CMK.'
         else s.name || ' TDE protector encrypted with CMK.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_sql_server s,
       jsonb_array_elements(encryption_protector) encryption,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = s.subscription_id;
+      sub.subscription_id = s.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -610,15 +652,29 @@ query "sql_database_allow_internet_access" {
         or firewall_rules @> '[{"properties":{"endIpAddress":"255.255.255.255","startIpAddress":"0.0.0.0"}}]'
           then s.title || ' allows ingress 0.0.0.0/0 or any ip over internet.'
           else s.title || ' not allows ingress 0.0.0.0/0 or any ip over internet.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_sql_server s,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = s.subscription_id;
+      sub.subscription_id = s.subscription_id and 
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -631,17 +687,31 @@ query "sql_db_active_directory_admin_configured" {
         else 'ok'
       end as status,
       case
-        when server_azure_ad_administrator is null then name || ' Azure AD authentication not configured.'
-        else name || ' Azure AD authentication configured.'
-      end as reason
+        when server_azure_ad_administrator is null then s.name || ' Azure AD authentication not configured.'
+        else s.name || ' Azure AD authentication configured.'
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_sql_server s,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = s.subscription_id;
+      sub.subscription_id = s.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -656,7 +726,19 @@ query "sql_server_atp_enabled" {
       case
         when security -> 'properties' ->> 'state' = 'Disabled' then s.name || ' Azure defender disabled.'
         else s.name || ' Azure defender enabled.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
@@ -664,8 +746,10 @@ query "sql_server_atp_enabled" {
       azure_sql_server s,
       jsonb_array_elements(server_security_alert_policy) security,
       azure_subscription sub
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = s.subscription_id;
+      sub.subscription_id = s.subscription_id and 
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -679,19 +763,33 @@ query "sql_server_auditing_retention_period_90" {
         else 'alarm'
       end as status,
       case
-        when (audit -> 'properties' ->> 'retentionDays')::integer = 0 then name || ' audit retention set to unlimited days.'
-        when (audit -> 'properties' ->> 'retentionDays')::integer >= 90 then name || ' audit retention greater than 90 days.'
-        else  name || ' audit retention less than 90 days.'
-      end as reason
+        when (audit -> 'properties' ->> 'retentionDays')::integer = 0 then s.name || ' audit retention set to unlimited days.'
+        when (audit -> 'properties' ->> 'retentionDays')::integer >= 90 then s.name || ' audit retention greater than 90 days.'
+        else  s.name || ' audit retention less than 90 days.'
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_sql_server s,
       jsonb_array_elements(server_audit_policy) audit,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = s.subscription_id;
+      sub.subscription_id = s.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -722,7 +820,19 @@ query "sql_server_va_setting_periodic_scan_enabled" {
           )
           then s.name || ' VA setting periodic recurring scans disabled.'
         else s.name || ' VA setting periodic recurring scans enabled.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
@@ -730,9 +840,11 @@ query "sql_server_va_setting_periodic_scan_enabled" {
       azure_sql_server s,
       jsonb_array_elements(server_security_alert_policy) security,
       jsonb_array_elements(server_vulnerability_assessment) assessment,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = s.subscription_id;
+      sub.subscription_id = s.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -763,7 +875,19 @@ query "sql_server_va_setting_reports_notify_admins" {
           )
           then s.name || ' VA setting not configured to send email notifications to subscription admins and owners.'
         else s.name || ' VA setting configured to send email notifications to subscription admins and owners.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
@@ -771,9 +895,11 @@ query "sql_server_va_setting_reports_notify_admins" {
       azure_sql_server s,
       jsonb_array_elements(server_security_alert_policy) security,
       jsonb_array_elements(server_vulnerability_assessment) assessment,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = s.subscription_id;
+      sub.subscription_id = s.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -804,7 +930,19 @@ query "sql_server_va_setting_scan_reports_configured" {
           )
         then s.name || ' VA scan reports and alerts not configured send email.'
         else s.name || ' VA scan reports and alerts configured to send email.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
@@ -812,9 +950,11 @@ query "sql_server_va_setting_scan_reports_configured" {
       azure_sql_server s,
       jsonb_array_elements(server_security_alert_policy) security,
       jsonb_array_elements(server_vulnerability_assessment) assessment,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = s.subscription_id;
+      sub.subscription_id = s.subscription_id and 
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 

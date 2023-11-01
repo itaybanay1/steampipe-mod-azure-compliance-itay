@@ -222,16 +222,30 @@ query "keyvault_logging_enabled" {
         when v.diagnostic_settings is null then v.name || ' logging not enabled.'
         when l.key_vault_name not like concat('%', v.name, '%') then v.name || ' logging not enabled.'
         else v.name || ' logging enabled.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "v.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_key_vault v,
       logging_details l,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = v.subscription_id;
+      sub.subscription_id = v.subscription_id and 
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 

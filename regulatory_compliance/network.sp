@@ -258,14 +258,28 @@ query "network_security_group_rdp_access_restricted" {
         when nsg.sg_name is null
           then sg.title || ' restricts RDP access from internet.'
         else sg.title || ' allows RDP access from internet.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "sg.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_network_security_group sg
       left join network_sg nsg on nsg.sg_name = sg.name
-      join azure_subscription sub on sub.subscription_id = sg.subscription_id;
+      join azure_subscription sub on sub.subscription_id = sg.subscription_id
+      join azure_compute_virtual_machine comp
+      on comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -303,14 +317,28 @@ query "network_security_group_subnet_associated" {
       case
         when subnets is null then name || ' not associated with subnet.'
         else name || ' associated with ' || split_part(rtrim((subnet -> 'id') :: text, '"'), '/subnets/',2) || '.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "sg.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_network_security_group as sg
       join azure_subscription as sub on sub.subscription_id = sg.subscription_id
-      left join jsonb_array_elements(subnets) as subnet on true;
+      left join jsonb_array_elements(subnets) as subnet on true
+      join azure_compute_virtual_machine comp 
+      on comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -615,14 +643,28 @@ query "network_security_group_https_access_restricted" {
       case
         when nsg.sg_name is null then sg.title || ' restricts HTTPS access from internet.'
         else sg.title || ' allows HTTPS access from internet.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "sg.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_network_security_group sg
       left join network_sg nsg on nsg.sg_name = sg.name
-      join azure_subscription sub on sub.subscription_id = sg.subscription_id;
+      join azure_subscription sub on sub.subscription_id = sg.subscription_id
+      join azure_compute_virtual_machine comp
+      on comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -660,14 +702,28 @@ query "network_security_group_ssh_access_restricted" {
         when nsg.sg_name is null
           then sg.title || ' restricts SSH access from internet.'
         else sg.title || ' allows SSH access from internet.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "sg.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_network_security_group sg
       left join network_sg nsg on nsg.sg_name = sg.name
-      join azure_subscription sub on sub.subscription_id = sg.subscription_id;
+      join azure_subscription sub on sub.subscription_id = sg.subscription_id
+      join azure_compute_virtual_machine comp
+      on comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -735,13 +791,27 @@ query "network_sg_flowlog_retention_period_greater_than_90" {
         when fl.retention_policy_days < 90
           then sg.name || ' flowlog ' || fl.title || ' retention period is less than 90 days.'
         else sg.name || ' flowlog ' || fl.title || ' retention period is ' || fl.retention_policy_days || ' days.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.tag_dimensions_qualifier_sql, "__QUALIFIER__", "sg.")}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "sg.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_network_security_group sg
       left join azure_network_watcher_flow_log fl on sg.id = fl.target_resource_id
-      join azure_subscription sub on sub.subscription_id = sg.subscription_id;
+      join azure_subscription sub on sub.subscription_id = sg.subscription_id
+      join azure_compute_virtual_machine comp
+      on comp.subscription_id = sub.subscription_id;
   EOQ
 }

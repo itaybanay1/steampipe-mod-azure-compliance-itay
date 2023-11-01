@@ -344,12 +344,26 @@ query "monitor_application_insights_configured" {
       case
         when i.subscription_id is null then sub.display_name || ' does not have application insights configured.'
         else sub.display_name || ' has ' || no_application_insight || ' application insights configured.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_subscription as sub
-      left join application_insights as i on i.subscription_id = sub.subscription_id;
+      left join application_insights as i on i.subscription_id = sub.subscription_id
+      join azure_compute_virtual_machine comp
+      on comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -390,14 +404,28 @@ query "monitor_diagnostic_settings_captures_proper_categories" {
         when valid_category_count > 0
           then sett.name || ' logs enabled for ' || valid_categories || ' categories.'
           else sett.name || ' logs not enabled for categories administrative, security, alert and policy.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_global_qualifier_sql, "__QUALIFIER__", "sett.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       enabled_settings sett,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = sett.subscription_id;
+      sub.subscription_id = sett.subscription_id and 
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -430,12 +458,25 @@ query "monitor_log_alert_create_policy_assignment" {
       case
         when count(a.subscription_id) > 0 then 'Activity log alert exists for create policy assignment event.'
         else 'Activity log alert does not exists for create policy assignment event.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_subscription sub
       left join alert_rule a on sub.subscription_id = a.subscription_id
+      join azure_compute_virtual_machine comp on comp.subscription_id = sub.subscription_id
     group by
       a.subscription_id,
       sub.subscription_id,
@@ -535,12 +576,26 @@ query "monitor_log_alert_create_update_nsg" {
       case
         when count(a.subscription_id) > 0 then 'Activity log alert exists for create or update Network Security Group event.'
         else 'Activity log alert does not exists for create or update Network Security Group event.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_subscription sub
       left join alert_rule a on sub.subscription_id = a.subscription_id
+      join azure_compute_virtual_machine comp 
+      on comp.subscription_id = sub.subscription_id
     group by
       sub._ctx,
       sub.subscription_id,
@@ -588,12 +643,26 @@ query "monitor_log_alert_create_update_public_ip_address" {
       case
         when count(a.subscription_id) > 0 then 'Activity Log Alert exists for Create or Update Public IP Address rule.'
         else 'Activity Log Alert does not exists for Create or Update Public IP Address rule.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_subscription sub
       left join alert_rule a on sub.subscription_id = a.subscription_id
+      join azure_compute_virtual_machine comp
+      on comp.subscription_id = sub.subscription_id
     group by
       sub._ctx,
       sub.subscription_id,
@@ -640,12 +709,26 @@ query "monitor_log_alert_create_update_security_solution" {
       case
         when count(a.subscription_id) > 0 then 'Activity log alert exists for create or update Security Solution event.'
         else 'Activity log alert does not exists for create or update Security Solution event.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_subscription sub
       left join alert_rule a on sub.subscription_id = a.subscription_id
+      join azure_compute_virtual_machine comp
+      on comp.subscription_id = sub.subscription_id
     group by
       sub._ctx,
       sub.subscription_id,
@@ -693,12 +776,26 @@ query "monitor_log_alert_create_update_sql_servers_firewall_rule" {
       case
         when count(a.subscription_id) > 0 then 'Activity Log Alert exists for Create or Update SQL Server Firewall Rule.'
         else 'Activity Log Alert does not exists for Create or Update SQL Server Firewall Rule.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_subscription sub
       left join alert_rule a on sub.subscription_id = a.subscription_id
+      join azure_compute_virtual_machine comp
+      on comp.subscription_id = sub.subscription_id
     group by
       sub._ctx,
       sub.subscription_id,
@@ -798,12 +895,26 @@ query "monitor_log_alert_delete_nsg" {
         case
           when count(a.subscription_id) > 0 then 'Activity log alert exists for delete Network Security Group event.'
           else 'Activity log alert does not exists for delete Network Security Group event.'
-        end as reason
+        end as reason,
+        comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
         ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub.")}
         ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
       from
         azure_subscription sub
         left join alert_rule a on sub.subscription_id = a.subscription_id
+        join azure_compute_virtual_machine comp
+        on comp.subscription_id = sub.subscription_id
       group by
         sub._ctx,
         sub.subscription_id,
@@ -840,12 +951,26 @@ query "monitor_log_alert_delete_policy_assignment" {
       case
         when count(a.subscription_id) > 0 then 'Activity log alert exists for delete policy assignment event.'
         else 'Activity log alert does not exists for delete policy assignment event.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_subscription sub
       left join alert_rule a on sub.subscription_id = a.subscription_id
+      join azure_compute_virtual_machine comp 
+      on comp.subscription_id = sub.subscription_id
     group by
       sub._ctx,
       sub.subscription_id,
@@ -892,12 +1017,26 @@ query "monitor_log_alert_delete_public_ip_address" {
       case
         when count(a.subscription_id) > 0 then 'Activity Log Alert exists for Delete Public IP Address rule.'
         else 'Activity Log Alert does not exists for Delete Public IP Address rule.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_subscription sub
       left join alert_rule a on sub.subscription_id = a.subscription_id
+      join azure_compute_virtual_machine comp 
+      on comp.subscription_id = sub.subscription_id
     group by
       sub._ctx,
       sub.subscription_id,
@@ -944,12 +1083,26 @@ query "monitor_log_alert_delete_security_solution" {
       case
         when count(a.subscription_id) > 0 then 'Activity log alert exists for delete Security Solution event.'
         else 'Activity log alert does not exists for delete Security Solution event.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_subscription sub
       left join alert_rule a on sub.subscription_id = a.subscription_id
+      join azure_compute_virtual_machine comp
+      on comp.subscription_id = sub.subscription_id
     group by
       sub._ctx,
       sub.subscription_id,
@@ -995,12 +1148,26 @@ query "monitor_log_alert_delete_sql_servers_firewall_rule" {
       case
         when count(a.subscription_id) > 0 then 'Activity Log Alert exists for Delete SQL Server Firewall Rule.'
         else 'Activity Log Alert does not exists for Delete SQL Server Firewall Rule.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_subscription sub
       left join alert_rule a on sub.subscription_id = a.subscription_id
+      join azure_compute_virtual_machine comp 
+      on comp.subscription_id = sub.subscription_id
     group by
       sub._ctx,
       sub.subscription_id,
@@ -1063,18 +1230,32 @@ query "monitor_logs_storage_container_insights_activity_logs_encrypted_with_byok
         when a.encryption_key_source = 'Microsoft.Keyvault'
           then a.name || ' container insights-activity-logs encrypted with BYOK.'
         else a.name || ' container insights-activity-logs not encrypted with BYOK.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "a.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_storage_container c,
       azure_storage_account a,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
       c.name = 'insights-activity-logs'
       and c.account_name = a.name
-      and sub.subscription_id = a.subscription_id;
+      and sub.subscription_id = a.subscription_id and 
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -1141,15 +1322,29 @@ query "monitor_logs_storage_container_insights_activity_logs_not_public_accessib
         when public_access != 'None'
           then account_name || ' container insights-activity-logs storing activity logs publicly accessible.'
         else account_name || ' container insights-activity-logs storing activity logs not publicly accessible.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${replace(local.common_dimensions_global_qualifier_sql, "__QUALIFIER__", "sc.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_storage_container sc,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
       name = 'insights-activity-logs'
-      and sub.subscription_id = sc.subscription_id;
+      and sub.subscription_id = sc.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 

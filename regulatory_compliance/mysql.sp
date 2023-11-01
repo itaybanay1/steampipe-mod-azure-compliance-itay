@@ -123,15 +123,29 @@ query "mysql_ssl_enabled" {
       case
         when ssl_enforcement = 'Disabled' then s.name || ' SSL connection disabled.'
         else s.name || ' SSL connection enabled.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_mysql_server as s,
-      azure_subscription as sub
+      azure_subscription as sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = s.subscription_id;
+      sub.subscription_id = s.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -340,17 +354,31 @@ query "mysql_server_audit_logging_enabled" {
       case
         when lower(config -> 'ConfigurationProperties' ->> 'value') != 'on' then s.name || ' server parameter audit_log_enabled off.'
         else s.name || ' server parameter audit_log_enabled on.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_mysql_server as s,
       jsonb_array_elements(server_configurations) config,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
       config ->> 'Name' = 'audit_log_enabled'
-      and sub.subscription_id = s.subscription_id;
+      and sub.subscription_id = s.subscription_id and 
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -365,17 +393,31 @@ query "mysql_server_audit_logging_events_connection_set" {
       case
         when lower(config -> 'ConfigurationProperties' ->> 'value') = 'connection' then s.name || ' server parameter audit_log_events has connection set.'
         else s.name || ' server parameter audit_log_events connection not set.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_mysql_server as s,
       jsonb_array_elements(server_configurations) config,
-      azure_subscription sub
+      azure_subscription sub,
+      azure_compute_virtual_machine comp
     where
       config ->> 'Name' = 'audit_log_events'
-      and sub.subscription_id = s.subscription_id;
+      and sub.subscription_id = s.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
 
@@ -392,14 +434,28 @@ query "mysql_server_min_tls_1_2" {
         when minimal_tls_version = 'TLSEnforcementDisabled' then s.name || ' TLS enforcement is disabled.'
         when minimal_tls_version = 'TLS1_2' then s.name || ' minimum TLS version set to ' || minimal_tls_version || '.'
         else s.name || ' minimum TLS version set to ' || minimal_tls_version || '.'
-      end as reason
+      end as reason,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type
       ${local.tag_dimensions_sql}
       ${replace(local.common_dimensions_qualifier_sql, "__QUALIFIER__", "s.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
       azure_mysql_server as s,
-      azure_subscription as sub
+      azure_subscription as sub,
+      azure_compute_virtual_machine comp
     where
-      sub.subscription_id = s.subscription_id;
+      sub.subscription_id = s.subscription_id and
+      comp.subscription_id = sub.subscription_id;
   EOQ
 }
