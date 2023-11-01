@@ -604,15 +604,15 @@ query "monitor_log_alert_create_update_nsg" {
       ${replace(local.common_dimensions_subscription_id_qualifier_sql, "__QUALIFIER__", "sub.")}
       ${replace(local.common_dimensions_qualifier_subscription_sql, "__QUALIFIER__", "sub.")}
     from
-      azure_subscription sub,
+      azure_subscription sub
       left join alert_rule a 
-      on sub.subscription_id = a.subscription_id,
+      on sub.subscription_id = a.subscription_id
       join azure_compute_virtual_machine comp 
       on comp.subscription_id = sub.subscription_id
     group by
       sub._ctx,
       sub.subscription_id,
-      sub.display_name
+      sub.display_name,
       comp.id,
       comp.type,
       comp.vm_id,
@@ -691,7 +691,7 @@ query "monitor_log_alert_create_update_public_ip_address" {
     group by
       sub._ctx,
       sub.subscription_id,
-      sub.display_name
+      sub.display_name,
       comp.id,
       comp.type,
       comp.vm_id,
@@ -769,7 +769,19 @@ query "monitor_log_alert_create_update_security_solution" {
     group by
       sub._ctx,
       sub.subscription_id,
-      sub.display_name;
+      sub.display_name,
+      comp.id,
+      comp.type,
+      comp.vm_id,
+      comp.size,
+      comp.allow_extension_operations,
+      comp.computer_name,
+      comp.disable_password_authentication,
+      comp.image_exact_version,
+      comp.image_id,
+      comp.os_version,
+      comp.os_name,
+      comp.os_type;
   EOQ
 }
 
@@ -836,7 +848,7 @@ query "monitor_log_alert_create_update_sql_servers_firewall_rule" {
     group by
       sub._ctx,
       sub.subscription_id,
-      sub.display_name
+      sub.display_name,
       comp.id,
       comp.type,
       comp.vm_id,
@@ -967,7 +979,7 @@ query "monitor_log_alert_delete_nsg" {
       group by
         sub._ctx,
         sub.subscription_id,
-        sub.display_name
+        sub.display_name,
         comp.id,
       comp.type,
       comp.vm_id,
@@ -1113,7 +1125,8 @@ query "monitor_log_alert_delete_public_ip_address" {
     group by
       sub._ctx,
       sub.subscription_id,
-      sub.display_namecomp.id,
+      sub.display_namecomp,
+      comp.id,
       comp.type,
       comp.vm_id,
       comp.size,
@@ -1190,7 +1203,7 @@ query "monitor_log_alert_delete_security_solution" {
     group by
       sub._ctx,
       sub.subscription_id,
-      sub.display_name
+      sub.display_name,
       comp.id,
       comp.type,
       comp.vm_id,
@@ -1267,7 +1280,7 @@ query "monitor_log_alert_delete_sql_servers_firewall_rule" {
     group by
       sub._ctx,
       sub.subscription_id,
-      sub.display_name
+      sub.display_name,
       comp.id,
       comp.type,
       comp.vm_id,
